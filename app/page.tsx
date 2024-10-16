@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Simulate loading
@@ -19,10 +18,6 @@ export default function Home() {
 
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="flex justify-center items-center min-h-screen">Error: {error.message}</div>;
   }
 
   return (

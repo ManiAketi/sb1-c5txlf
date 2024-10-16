@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   try {
-    const { name, email, phoneNumber, password, role } = await req.json()
+    const { name, email, phoneNumber, password, role, services, state, district } = await req.json()
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     })
 
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 400 })
+      return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
     }
 
     // Hash password
@@ -36,19 +36,19 @@ export async function POST(req: Request) {
       await prisma.serviceProvider.create({
         data: {
           userId: newUser.id,
-          services: [],
-          state: '',
-          district: '',
+          services,
+          state,
+          district,
           images: [],
           availability: {},
         },
       })
     }
 
-    return NextResponse.json({ message: 'User created successfully' }, { status: 201 })
+    return NextResponse.json({ message: 'User created successfully', userId: newUser.id }, { status: 201 })
   } catch (error) {
     console.error('Signup error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: 'An error occurred during signup. Please try again.' }, { status: 500 })
   } finally {
     await prisma.$disconnect()
   }

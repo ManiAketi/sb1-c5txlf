@@ -1,12 +1,18 @@
-import NextAuth from "next-auth"
+import NextAuth, { NextAuthOptions, User as NextAuthUser } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
+import { JWT } from "next-auth/jwt"
 
 const prisma = new PrismaClient()
 
-const handler = NextAuth({
+// Extend the User type to include the role
+interface User extends NextAuthUser {
+  role?: string
+}
+
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -44,16 +50,16 @@ const handler = NextAuth({
     })
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.role = user.role
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: JWT }) {
       if (session?.user) {
         session.user.role = token.role
       }
@@ -63,6 +69,8 @@ const handler = NextAuth({
   pages: {
     signIn: '/login',
   },
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
